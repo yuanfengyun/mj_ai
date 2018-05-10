@@ -1,4 +1,4 @@
-1、只使用单色麻将万
+﻿1、只使用单色麻将万
 2、使用knn算法
 3、数据准备
   胡牌表hu_table
@@ -16,5 +16,10 @@
   需要打掉的牌记分out_score
   需要摸的牌记仇in_score，in_score根据剩余张数0-4取5种值
   对out_score和in_score进行求和
+8、测试方式，单色（只选取万），11张牌（只使用11张牌判断胡，而不是14张）
+9、程序说明
+  a、执行gen_hu_table.bat生成胡牌表
+  b、执行gen_ting_table.bat生成听牌表
+  c、执行test.bat测试代码
   
   
