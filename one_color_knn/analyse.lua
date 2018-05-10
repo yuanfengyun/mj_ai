@@ -1,4 +1,5 @@
 local ting_table = require "ting_table"
+local hu_table = require "hu_table"
 
 local diff_tbl = {
 	[1] = {1000},
@@ -12,6 +13,18 @@ local M = {}
 function M.init()
 	math.randomseed(os.time())
     ting_table:load("ting_table.txt")
+	hu_table:load("hu_table.txt")
+end
+
+function M.check_hu(hand_cards)
+	local key = 0
+	local v = 1
+	for i=1,9 do
+		local n_hand = math.floor(hand_cards/v)%10
+		key = key*10 + n_hand
+		v = v * 10
+	end
+	return hu_table:check(key)
 end
 
 -- 随机出牌
@@ -26,7 +39,8 @@ function M.get_random(hand_cards)
 		v = v * 10
 	end
 	
-	return t[math.random(1,#t)]
+	print("出随机牌")
+	return t[math.random(1,#t)],0
 end
 
 function M.analyse(out_cards, hand_cards)
@@ -41,18 +55,15 @@ function M.analyse(out_cards, hand_cards)
 	local t = {}
 	local v = 1
 	for i=1,9 do
-	    if v > ting_key then
-		    break
-		end
 	    local n_ting = math.floor(ting_key/v)%10
 		local n_hand = math.floor(hand_cards/v)%10
 		if n_hand > n_ting then
-			table.insert(t,10-i)
+			table.insert(t,i)
 		end
 		v = v * 10
 	end
 	
-	return t[math.random(1,#t)]
+	return t[math.random(1,#t)],ting_key
 end
 
 function M.get_ting_key(out_cards, hand_cards)
@@ -78,6 +89,7 @@ function M.get_ting_key(out_cards, hand_cards)
 	end
 
 	if not next(t) then
+		print("匹配失败")
 	    return
 	end
 
@@ -92,7 +104,7 @@ function M.get_ting_key(out_cards, hand_cards)
 	end
 	
 	for _,v in ipairs(t) do 
-		print("候选听牌",v.ting_key," 差异值:",v.diff)
+		--print("候选听牌",v.ting_key," 差异值:",v.diff)
 	end
 	
 	local index = math.random(1,max_index)
@@ -152,7 +164,7 @@ function M.get_diff(out_cards, hand_cards, ting_key, ting_cards)
 		v = v * 10
 	end
 
-	return diff
+	return math.floor(diff/ting_num)
 end
 
 return M
