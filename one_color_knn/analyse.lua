@@ -10,6 +10,7 @@ local diff_tbl = {
 local M = {}
 
 function M.init()
+	math.randomseed(os.time())
     ting_table:load("ting_table.txt")
 end
 
@@ -35,7 +36,6 @@ function M.analyse(out_cards, hand_cards)
 	end
 	
 	-- 根据目标选择出哪张牌
-	print(ting_key)
 	
 	-- 候选
 	local t = {}
@@ -47,7 +47,6 @@ function M.analyse(out_cards, hand_cards)
 	    local n_ting = math.floor(ting_key/v)%10
 		local n_hand = math.floor(hand_cards/v)%10
 		if n_hand > n_ting then
-			print(n_ting,n_hand,i)
 			table.insert(t,10-i)
 		end
 		v = v * 10
@@ -81,8 +80,6 @@ function M.get_ting_key(out_cards, hand_cards)
 	if not next(t) then
 	    return
 	end
-	
-	
 
 	-- 选取1种
 	local max_index = #t
@@ -94,8 +91,13 @@ function M.get_ting_key(out_cards, hand_cards)
 		end
 	end
 	
+	for _,v in ipairs(t) do 
+		print("候选听牌",v.ting_key," 差异值:",v.diff)
+	end
+	
 	local index = math.random(1,max_index)
 	local ting_key = t[index].ting_key
+	print("选中听牌",ting_key)
 	return ting_key
 end
 
