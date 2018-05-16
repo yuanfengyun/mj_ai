@@ -1,42 +1,55 @@
-local hu_table = require "hu_table"
+local table_mgr = require "table_mgr"
 
-local function add_to_table(t)
-    local k = 0
+local cached = {}
+
+local function add_to_table(t, num)
+    local k1 = 0
+	local k2 = 0
+	local k3 = 0
     for i=1,9 do
-        k = k * 10 + t[i]
+        k1 = (k1 << 3) + t[i]
+		k2 = (k2 << 3) + t[i+9]
+		k3 = (k3 << 3) + t[i+18]
     end
-	hu_table:add(k)
+	local key = k1 .."-".. k2 .."-".. k3
+	if cached[key] then
+		return true
+	end
+	cached[key] = true
+
+	table_mgr:add(key, num)
 end
 
 local function gen_table_sub(t, num)
-    for j=1,16 do
+	for j=1,48 do
         repeat
             local index
-            if j <= 9 then
+            if j <= 27 then
                 if t[j] > 1 then
                     break
                 end
                 t[j] = t[j] + 3
-            elseif j<= 16 then
-                index = j - 9
+            else
+				index = j - 27 + 2*math.floor((j-27-1)/7)
+				--print(index,j,2*math.floor((j-27-1)/7))
                 if t[index] >= 4 or t[index+1] >= 4 or t[index+2] >= 4 then
                     break
                 end
-            end
-            if index then
-                t[index] = t[index] + 1
+				t[index] = t[index] + 1
                 t[index + 1] = t[index + 1] + 1
                 t[index + 2] = t[index + 2] + 1
             end
 
-            if num < 3 then
-                gen_table_sub(t, num + 1)
+            if num < 4 then
+				if not add_to_table(t, 2+num*3) then
+					gen_table_sub(t, num + 1)
+				end
 			else
 				-- 暂时只加14张牌
-				add_to_table(t)
+				add_to_table(t, 2+num*3)
             end
 
-            if j<= 9 then
+            if j<= 27 then
                 t[j] = t[j] - 3
             else
                 t[index] = t[index] - 1
@@ -48,14 +61,21 @@ local function gen_table_sub(t, num)
 end
 
 local function gen_eye_table()
-    local t = {0,0,0,0,0,0,0,0,0}
+    local t = {
+		0,0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,0
+	}
 
-    for i=1,9 do
+    for i=1,27 do
+		print("将"..i)
         t[i] = 2
+		add_to_table(t, 2)
         gen_table_sub(t, 1)
         t[i] = 0
     end
-	hu_table:dump("hu_table.txt")
+	table_mgr:dump()
 end
 
+table_mgr:init()
 gen_eye_table()
