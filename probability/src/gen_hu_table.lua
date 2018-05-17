@@ -68,7 +68,7 @@ local function gen_eye_table()
 	}
 
     for i=1,27 do
-		print("将"..i)
+		print("进度"..i.."/27")
         t[i] = 2
 		add_to_table(t, 2)
         gen_table_sub(t, 1)

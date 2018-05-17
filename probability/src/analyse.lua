@@ -3,8 +3,10 @@ local table_mgr = require "table_mgr"
 local M = {}
 
 function M.init()
-	math.randomseed(os.time())
+	table_mgr:init()
+	print("加载胡牌表开始")
 	table_mgr:load()
+	print("加载胡牌表结束")
 end
 
 function M.check_hu(hand_cards)
@@ -16,10 +18,10 @@ function M.check_hu(hand_cards)
 		k1 = (k1<<3) + hand_cards[i]
 		k2 = (k2<<3) + hand_cards[i+9]
 		k3 = (k3<<3) + hand_cards[i+17]
-		sum = sum + hand_cards[i]
+		sum = sum + hand_cards[i] + hand_cards[i+9] + hand_cards[i+18]
 	end
 	local key = string.format("%d-%d-%d",k1,k2,k3)
-	return hu_table:check(key, sum)
+	return table_mgr:check(key, sum)
 end
 
 -- 随机出牌
@@ -45,7 +47,7 @@ function mathC(n, m)
 		n_i = n_i + 1
 		c_m = c_m * n_i
 	end
-	return c_n/cm
+	return c_n/c_m
 end
 
 function M.analyse(out_cards, hand_cards)
@@ -57,9 +59,9 @@ function M.analyse(out_cards, hand_cards)
 	end
 
 	local n = 108 - out_cards_sum - sum
-	
+
 	local m = 5
-    local c_n_m = mathC(n, m)
+    --local c_n_m = mathC(n, m)
 	
 	local max_score = 0
 	local max_card = 0
@@ -67,10 +69,11 @@ function M.analyse(out_cards, hand_cards)
 	for i=1,27 do
 		-- 扣除1张牌以后的胡牌概率
 		if hand_cards[i] > 0 then
+			print(i)
 			hand_cards[i] = hand_cards[i] - 1
 			out_cards[i] = out_cards[i] + 1
 			local score = M.get_score(out_cards, hand_cards, tbl, n, m)
-			if not max_score or score > max_score then
+			if score > max_score then
 				max_score = score
 				max_card = i
 			end
@@ -94,21 +97,29 @@ function M.get_score(out_cards, hand_cards, tbl, n, m)
 		local c_A_a = 1
 		local total_need = 0
 		for i=1,27 do
-		    local index = math.floor((i-1)/3)+1
+		    local index = math.floor((i-1)/9)+1
 			local k =v[index]
 			local bit = (i-(index-1)*9 - 1)*3
 			local need = (k & (7 << bit)) >> bit
-			if need > 4 - hand_cards[i] - out_cards then
+			local left = 4 - hand_cards[i] - out_cards[i]
+			if need > left then
 				br = false
 				break
 			end
-			if need > hand_cards[i] then
-				total_need = total_need + (need - hand_cards[i])
-				c_A_a = c_A_a * mathC(4 - hand_cards[i] - out_cards, need - hand_cards[i])
+			local lack = need - hand_cards[i]
+			if lack then
+				total_need = total_need + lack
+				c_A_a = c_A_a * mathC(left, lack)
 			end
 		end
 		if br then
-			score = score + c_A_a * mathC(n-total_need, m-total_need)
+			local c_need = 1
+			if m > total_need then
+				c_need = mathC(n-total_need, m-total_need)
+			elseif m < total_need then
+				c_need = 0
+			end
+			score = score + c_A_a * c_need
 		end
 	end
 	return score
