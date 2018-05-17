@@ -11,7 +11,7 @@ local function add_to_table(t, num)
 		k2 = (k2 << 3) + t[i+9]
 		k3 = (k3 << 3) + t[i+18]
     end
-	local key = k1 .."-".. k2 .."-".. k3
+	local key = k1 .." ".. k2 .." ".. k3
 	if cached[key] then
 		return true
 	end

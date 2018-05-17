@@ -20,7 +20,7 @@ function M.check_hu(hand_cards)
 		k3 = (k3<<3) + hand_cards[i+17]
 		sum = sum + hand_cards[i] + hand_cards[i+9] + hand_cards[i+18]
 	end
-	local key = string.format("%d-%d-%d",k1,k2,k3)
+	local key = string.format("%d %d %d",k1,k2,k3)
 	return table_mgr:check(key, sum)
 end
 
@@ -93,7 +93,6 @@ function M.get_score(out_cards, hand_cards, tbl, n, m)
     local score = 0
     for _,v in pairs(tbl) do
 		local br = true
-		local t = {}
 		local c_A_a = 1
 		local total_need = 0
 		for i=1,27 do
@@ -101,15 +100,17 @@ function M.get_score(out_cards, hand_cards, tbl, n, m)
 			local k =v[index]
 			local bit = (i-(index-1)*9 - 1)*3
 			local need = (k & (7 << bit)) >> bit
-			local left = 4 - hand_cards[i] - out_cards[i]
-			if need > left then
-				br = false
-				break
-			end
-			local lack = need - hand_cards[i]
-			if lack then
-				total_need = total_need + lack
-				c_A_a = c_A_a * mathC(left, lack)
+			if need > 0 then
+				local left = 4 - hand_cards[i] - out_cards[i]
+				if need > left then
+					br = false
+					break
+				end
+				local lack = need - hand_cards[i]
+				if lack then
+					total_need = total_need + lack
+					c_A_a = c_A_a * mathC(left, lack)
+				end
 			end
 		end
 		if br then

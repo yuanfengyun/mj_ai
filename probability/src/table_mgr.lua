@@ -36,9 +36,9 @@ function M:load_one(i)
             break
         end
 		
-		local key_begin1 = string.find(line, "-")
+		local key_begin1 = string.find(line, " ")
 		local key1 = string.sub(line, 1, key_begin1-1)
-		local key_begin2 = string.find(line, "-", key_begin1+2)
+		local key_begin2 = string.find(line, " ", key_begin1+2)
 		key2 = string.sub(line, key_begin1+1, key_begin2-1)
 		key3 = string.sub(line, key_begin2+1)
 
