@@ -73,7 +73,6 @@ function M.analyse(out_cards, hand_cards)
 			hand_cards[i] = hand_cards[i] - 1
 			out_cards[i] = out_cards[i] + 1
 			local score = M.get_score(out_cards, hand_cards, tbl, n, m)
-			printf("card=%d, score=%d\n",i,score);
 
 			if score > max_score then
 				max_score = score
@@ -104,7 +103,7 @@ function M.get_score(out_cards, hand_cards, tbl, n, m)
 			local need = (k & (7 << bit)) >> bit
 			if need > 0 then
 				local left = 4 - hand_cards[i] - out_cards[i]
-				if need > left then
+				if need > left + hand_cards[i]  then
 					br = false
 					break
 				end
