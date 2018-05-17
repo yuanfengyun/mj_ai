@@ -1,35 +1,35 @@
 #include "table_mgr.h"
 
-int mathC(int n,int m)
+long long mathC(int n,int m)
 {
-    int c_n = n;
-    int c_m = 1;
-    int n_i = 1;
-    while(n_i < m)
-    {
-        c_n = c_n * (n - n_i);
-        n_i = n_i + 1;
-        c_m = c_m * n_i;
-    }
-    return c_n/c_m;
+	long long a = 1, b = 1;
+	if (n - m < m) m = n - m;
+	if (n == 0)
+		return 1;
+	for (int i = n; i >= n - m + 1; i--)
+		a = a*i;
+	for (int i = 1; i <= m; i++)
+		b = b*i;
+
+	return a / b;
 }
 
-int get_score(char* outcards,char* handcards,struct table* t,int n, int m)
+long long get_score(char* handcards, char* outcards, struct table* t,int n, int m)
 {
-    int score = 0;
+    long long score = 0;
 
     for(int i=0;i<t->num;++i)
     {
         int br = 0;
         char* cards = t->items[i].cards;
-        int c_A_a = 1;
+        long long c_A_a = 1;
         int total_need = 0;
-        for(int card=0;card<27;++i)
+        for(int card=0;card<27;++card)
         {
             int need = cards[card];
             if(need==0) continue;
             int left = 4 - handcards[card] - outcards[card];
-            if(need > left){
+            if(need > left+ handcards[card]){
                 br = 1;
                 break;
             }
@@ -39,11 +39,15 @@ int get_score(char* outcards,char* handcards,struct table* t,int n, int m)
                 c_A_a *= mathC(left, lack);
             }
         }
-        if(br) continue;
-        int c_need = 1;
+		if (br) {
+			continue;
+		}
+        long long c_need = 1;
         if(m>total_need) c_need = mathC(n-total_need, m-total_need);
-        else if(m<total_need) c_need = 0;
-
+		else if (m < total_need) {
+			c_need = 0;
+		}
+	
         score = score + c_A_a * c_need;
     }
 
@@ -52,7 +56,7 @@ int get_score(char* outcards,char* handcards,struct table* t,int n, int m)
 
 char analyse(char* handcards,char* outcards)
 {
-    int m = 5;
+    int m = 8;
     int n = 108;
     int sum = 0;
     int out_cards_sum = 0;
@@ -63,7 +67,7 @@ char analyse(char* handcards,char* outcards)
     }
 
     n = n - sum - out_cards_sum;
-    int max_score = 0;
+    long long max_score = 0;
     int max_card = 0;
     struct table* t = table_mgr_get(sum);
     for(int i=0;i<27;++i)
@@ -72,7 +76,9 @@ char analyse(char* handcards,char* outcards)
     
         --handcards[i];
         ++outcards[i];
-        int score = get_score(outcards,handcards,t,n,m);
+        long long score = get_score(handcards,outcards,t,n,m);
+		printf("1 card=%2d, score=%I64d\n", i, score);
+
         if(score>max_score)
         {
             max_score = score;
@@ -81,4 +87,5 @@ char analyse(char* handcards,char* outcards)
         ++handcards[i];
         --outcards[i];
     }
+	return max_card;
 }

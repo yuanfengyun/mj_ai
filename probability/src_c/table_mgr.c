@@ -24,11 +24,11 @@ void table_mgr_init()
 
 void split(char* cards, int k)
 {
-    for(int i=8;i>=0;--i)
+    for(int i=0;i<9;++i)
     {
         int bit = 3*i;
         int n = (k&(7<<bit))>>bit;
-        cards[8-i] = n;
+        cards[i] = n;
     }
 }
 
@@ -48,7 +48,7 @@ void load_one(int i)
       fscanf(f,"%ld %ld %ld\n",&k[0],&k[1],&k[2]);
       char* cards = t->items[n].cards;
       for(int i=0;i<3;++i){
-        split(cards, i*9);
+        split(&cards[i*9],k[i]);
       }
     }
 }

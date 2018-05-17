@@ -73,6 +73,8 @@ function M.analyse(out_cards, hand_cards)
 			hand_cards[i] = hand_cards[i] - 1
 			out_cards[i] = out_cards[i] + 1
 			local score = M.get_score(out_cards, hand_cards, tbl, n, m)
+			printf("card=%d, score=%d\n",i,score);
+
 			if score > max_score then
 				max_score = score
 				max_card = i
