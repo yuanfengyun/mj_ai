@@ -1,17 +1,41 @@
+#include<string.h>
 #include "table_mgr.h"
 
-long long mathC(int n,int m)
-{
-	long long a = 1, b = 1;
-	if (n - m < m) m = n - m;
-	if (n == 0)
-		return 1;
-	for (int i = n; i >= n - m + 1; i--)
-		a = a*i;
-	for (int i = 1; i <= m; i++)
-		b = b*i;
+long long c_cache[10000];
+long long c_c = 0;
 
-	return a / b;
+#define mathC(nn,mm) \
+do{\
+    int n = nn;\
+	int m = mm;\
+	long long cache = c_cache[n*100+m];\
+	if (cache != 0) {\
+		c_c = cache;\
+		break;\
+	}\
+	long long a = 1, b = 1;\
+	if (n - m < m) m = n - m;\
+	if (m == 0)\
+	{\
+		c_cache[n * 100 + m] = 1;\
+		c_cache[n * 100 + (n - m)] = 1;\
+		c_c = 1;\
+		break;\
+	}\
+	for (int i = n; i >= n - m + 1; i--)\
+		a = a*i;\
+	for (int i = 1; i <= m; i++)\
+		b = b*i;\
+	long long value = a / b;\
+	c_cache[n*100+m] = value;\
+	c_cache[n * 101-m] = value;\
+	c_c = value;\
+	break;\
+}while(1)
+
+void analyse_init()
+{
+	memset(c_cache, 0, sizeof(c_cache));
 }
 
 long long get_score(char* handcards, char* outcards, struct table* t,int n, int m)
@@ -36,14 +60,21 @@ long long get_score(char* handcards, char* outcards, struct table* t,int n, int 
             int lack = need - handcards[card];
             if(lack > 0){
                 total_need += lack;
-                c_A_a *= mathC(left, lack);
+				mathC(left, lack);
+				c_A_a *= c_c;
             }
         }
 		if (br) {
 			continue;
 		}
         long long c_need = 1;
-        if(m>total_need) c_need = mathC(n-total_need, m-total_need);
+		if (m > total_need)
+		{
+			int x = (n - total_need);
+			int y = (m - total_need);
+			mathC(x,y);
+			c_need = c_c;
+		}
 		else if (m < total_need) {
 			c_need = 0;
 		}

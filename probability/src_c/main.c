@@ -27,6 +27,7 @@ void test_analyse()
 int main()
 {
     table_mgr_init();
+	analyse_init();
     printf("load table begin\n");
     table_mgr_load();
     printf("load table finish\n");
