@@ -17,7 +17,12 @@ function M:add(index, key)
 end
 
 function M:check(index, key)
-    return self.tbls[index][key]
+	local tbl = self.tbls[index]
+	if not tbl then
+		return false
+	end
+
+    return tbl[key]
 end
 
 function M:get_tbl(index)

@@ -4,9 +4,8 @@
 long long c_cache[10000];
 long long c_c = 0;
 
-#define mathC(nn,mm) \
+#define mathC(n,mm) \
 do{\
-    int n = nn;\
 	int m = mm;\
 	long long cache = c_cache[n*100+m];\
 	if (cache != 0) {\

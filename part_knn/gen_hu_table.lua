@@ -20,7 +20,7 @@ local function add_to_table(t, level)
         if t[i] <= 2 then
 			table_mgr:add(level*3+2, k+eye)
 		end
-		eye = eye * 10
+		eye = eye << 3
     end
 
 	return true

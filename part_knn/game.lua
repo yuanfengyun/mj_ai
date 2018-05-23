@@ -101,11 +101,11 @@ function M:show()
 		out_cards2 = out_cards2 .. self:get_card_str(v)
 	end
 
-	print("电脑手牌",hand_cards1)
-	print("电脑出牌",out_cards1)
+	print("电脑1手牌",hand_cards1)
+	print("电脑1出牌",out_cards1)
 	print()
-	print("自己出牌",out_cards2)
-	print("自己手牌",hand_cards2)
+	print("电脑2出牌",out_cards2)
+	print("电脑2手牌",hand_cards2)
 end
 
 function M:sleep(n)
@@ -127,7 +127,7 @@ function M:ai()
 	end
 	if analyse.check_hu(self.player1_hand_cards) then
 		self:cls()
-		print("ai胡牌")
+		print("电脑1 胡牌",self:get_card_str(dispatch_card))
 		self:show()
 		self.status = "gameover"
 		return
@@ -135,7 +135,7 @@ function M:ai()
 	local begin = os.time()
 	local card = analyse.analyse(self.out_cards, self.player1_hand_cards)
 	self:cls()
-	print(string.format("ai 摸牌"..self:get_card_str(dispatch_card).."，思考%d秒，打出%s",(os.time()-begin),self:get_card_str(card)))
+	print(string.format("电脑1 摸牌"..self:get_card_str(dispatch_card).."，思考%d秒，打出%s",(os.time()-begin),self:get_card_str(card)))
 	self:show()
 	self.player1_hand_cards[card] = self.player1_hand_cards[card] - 1
 	self.out_cards[card] = self.out_cards[card] + 1
@@ -153,7 +153,7 @@ function M:ai_player()
 	end
 	if analyse.check_hu(self.player2_hand_cards) then
 		self:cls()
-		print("ai_player胡牌")
+		print("电脑2 胡牌",self:get_card_str(dispatch_card))
 		self:show()
 		self.status = "gameover"
 		return
@@ -161,7 +161,7 @@ function M:ai_player()
 	local begin = os.time()
 	local card = analyse.analyse(self.out_cards, self.player2_hand_cards)
 	self:cls()
-	print(string.format("自己 摸牌"..self:get_card_str(dispatch_card).."，思考%d秒，打出%s",(os.time()-begin),self:get_card_str(card)))
+	print(string.format("电脑2 摸牌"..self:get_card_str(dispatch_card).."，思考%d秒，打出%s",(os.time()-begin),self:get_card_str(card)))
 	self:show()
 
 	self.player2_hand_cards[card] = self.player2_hand_cards[card] - 1

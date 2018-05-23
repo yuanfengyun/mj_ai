@@ -1,6 +1,36 @@
 local table_mgr = require "table_mgr"
 local part = require "part"
 
+local cached = {}
+function mathC(n, m)
+	if m == 0 or m == n then
+		return 1
+	end
+
+	if n - m < m then
+		m = n - m
+	end
+
+	local key = n*256 + m
+	local cache = cached[key]
+	if cache then
+		return cache
+	end
+	
+	local a = 1
+    local b = 1
+
+	for i = n,n - m + 1,-1 do
+		a = a*i
+	end
+	for i = 1,m do
+		b = b*i
+	end
+	cache = a / b
+	cached[key] = cache
+	return cache
+end
+
 local M = {}
 
 function M.init()
@@ -8,20 +38,38 @@ function M.init()
 	part:init()
 end
 
-function M.check_hu(hand_cards)
-	return false
+function M.check_hu(t)
+	local k1=0
+	local k2=0
+	local k3=0
+
+	local sum1 = 0
+	local sum2 = 0
+	local sum3 = 0
+
+	for i=1,9 do
+		local bit = (i-1)*3
+        k1 = k1 | (t[i]) << bit
+		k2 = k2 | (t[i+9]) << bit
+		k3 = k3 | (t[i+18]) << bit
+		
+		sum1 = sum1 + t[i]
+		sum2 = sum2 + t[i+9]
+		sum3 = sum3 + t[i+18]
+	end
+
+	return (sum1 == 0 or table_mgr:check(sum1, k1)) and (sum2 == 0 or table_mgr:check(sum2, k2)) and (sum3 == 0 or table_mgr:check(sum3, k3))
 end
 
 -- 随机出牌
 function M.get_random(hand_cards)
 	local t = {}
 	local v = 1
-	for i=1,9 do
-		local n_hand = math.floor(hand_cards/v)%10
+	for i=1,27 do
+		local n_hand = hand_cards[i]
 		if n_hand > 0 then
 			table.insert(t,i)
 		end
-		v = v * 10
 	end
 
 	print("出随机牌")
@@ -30,10 +78,14 @@ end
 
 function M.analyse(out_cards, hand_cards)
     local sum=0
+	local sum_out = 0
 	for i=1,27 do
         sum = sum + hand_cards[i]
+		sum_out = sum_out + out_cards[i]
 	end
 
+	local n = 108 - sum - sum_out
+	
 	local tbl = part:get(sum)
 	local max_score = 0
 	local max_card
@@ -41,7 +93,7 @@ function M.analyse(out_cards, hand_cards)
 		local c = hand_cards[i]
 		if c > 0 then
 			hand_cards[i] = hand_cards[i] - 1
-			local score = M.get_score(tbl, out_cards, hand_cards)
+			local score = M.get_score(tbl, out_cards, hand_cards, n)
 			--print(i, score)
 			if score > max_score then
 				max_score = score
@@ -58,14 +110,14 @@ function M.analyse(out_cards, hand_cards)
 	return M.get_random(hand_cards)
 end
 
-function M.get_score(tbl, out_cards, hand_cards)
+function M.get_score(tbl, out_cards, hand_cards, n)
 	local sum = 0
 	for _,v in ipairs(tbl) do
 		local mul = 1
 		for i=1,3 do
-			local sum_score = 1
+			local max_score = 1
 			if v[i] > 0 then
-				sum_score = 0
+				max_score = 0
 				local t = table_mgr:get_tbl(v[i])
 				local begin = (i-1)*9
 				local total = 0
@@ -73,6 +125,8 @@ function M.get_score(tbl, out_cards, hand_cards)
 					total = total + 1
 					local br = false
 					local s = 1
+					local c_A_a = 1
+					local total_need = 0
 					for c=1,9 do
 						local card = begin + c
 						local need = cards[c]
@@ -85,26 +139,25 @@ function M.get_score(tbl, out_cards, hand_cards)
 								break
 							end
 							if lack > 0 then
-								for i=1,left do
-									if i <= lack then
-										s = s * 0.25
-									else
-										s = s * 0.75
-									end
-								end
+								c_A_a = c_A_a * mathC(left, lack)
+								total_need = total_need + lack
 							end
 						end
 					end
 
-					if not br then
-						--sum_score = sum_score + s/total
-						if s > sum_score then
-							sum_score = s
+					if not br and total_need < 6 then
+						local m = total_need
+						local c_need = mathC(n-total_need, m-total_need)
+						local score = c_A_a * c_need / mathC(n, m)
+						if score < 0 then
+							print(c_A_a,c_need,mathC(n, m),n,m)
+							assert(false)
 						end
+						max_score = max_score + score
 					end
 				end
 			end
-			mul = mul * sum_score
+			mul = mul * max_score
 		end
 		sum = sum + mul
 	end
