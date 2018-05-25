@@ -14,4 +14,9 @@ local hand_cards = {
 	1,0,1,1,0,1,1,1,1
 }
 
-print("choose card:",analyse.analyse(out_cards, hand_cards))
+local begin = os.time()
+for i=1,20 do
+	analyse.analyse(out_cards, hand_cards)
+end
+
+print(os.time()-begin,"秒")

@@ -86,6 +86,15 @@ function M.analyse(out_cards, hand_cards)
 
 	local n = 108 - sum - sum_out
 	
+	local pro = {
+		[1] = {0,0,0,0,0,0},
+		[2] = {0,0,0,0,0,0},
+		[3] = {0,0,0,0,0,0},
+	}
+	pro[1][0]=0
+	pro[2][0]=0
+	pro[3][0]=0
+	
 	local tbl = part:get(sum)
 	local max_score = 0
 	local max_card
@@ -93,7 +102,7 @@ function M.analyse(out_cards, hand_cards)
 		local c = hand_cards[i]
 		if c > 0 then
 			hand_cards[i] = hand_cards[i] - 1
-			local score = M.get_score(tbl, out_cards, hand_cards, n)
+			local score = M.get_score(tbl, out_cards, hand_cards, n, pro)
 			--print(i, score)
 			if score > max_score then
 				max_score = score
@@ -110,47 +119,57 @@ function M.analyse(out_cards, hand_cards)
 	return M.get_random(hand_cards)
 end
 
-function M.get_score(tbl, out_cards, hand_cards, n)
+function M.get_score(tbl, out_cards, hand_cards, n, pro)
+	local hand_nums = {0,0,0}
+	for i=1,9 do
+		hand_nums[1] = hand_nums[1] + hand_cards[i]
+		hand_nums[2] = hand_nums[2] + hand_cards[i+9]
+		hand_nums[3] = hand_nums[3] + hand_cards[i+18]
+	end
 	local sum_pro = {0,0,0,0,0,0}
+	
 	for _,v in ipairs(tbl) do
-		local pro = {
-			[1] = {0,0,0,0,0,0},
-			[2] = {0,0,0,0,0,0},
-			[3] = {0,0,0,0,0,0},
-		}
-		pro[1][0]=0
-		pro[2][0]=0
-		pro[3][0]=0
 		for i=1,3 do
-			if v[i] > 0 then
-				local pro_i = pro[i]
-				local t = table_mgr:get_tbl(v[i])
-				local begin = (i-1)*9
-				for _,cards in pairs(t) do
-					local br = false
-					local c_A_a = 1
-					local total_need = 0
-					for c=1,9 do
-						local card = begin + c
-						local need = cards[c]
-						if need > 0 then
-							--满足不了条件了
-							local left = 4 - hand_cards[card] - out_cards[card]
-							local lack = need - hand_cards[card]
-							if lack > left then
-								br = true
-								break
-							end
-							if lack > 0 then
-								total_need = total_need + lack
-								c_A_a = c_A_a * mathC(left, lack)
+			local pro_i = pro[i]
+			for j=0,6 do
+				pro_i[j] = 0
+			end
+		end
+		for i=1,3 do
+			local color_cards_num = v[i]
+			if color_cards_num > 0 then
+  			    if color_cards_num - hand_nums[i] <= 6 then
+					local pro_i = pro[i]
+					local t = table_mgr:get_tbl(color_cards_num)
+					local begin = (i-1)*9
+					for _,cards in pairs(t) do
+						local br = false
+						local c_A_a = 1
+						local total_need = 0
+						for c=1,9 do
+							local card = begin + c
+							local need = cards[c]
+							if need > 0 then
+								local hand = hand_cards[card]
+								local left = 4 - hand - out_cards[card]
+								local lack = need - hand
+								if lack > 0 then
+									total_need = total_need + lack
+									if lack > left or total_need > 6 or total_need > color_cards_num then
+										br = true
+										break
+									end
+									c_A_a = c_A_a * mathC(left, lack)
+								end
 							end
 						end
-					end
 
-					if not br and total_need <= 6 and total_need <= v[i] then
-						pro_i[total_need] = pro_i[total_need] + c_A_a
+						if not br then
+							pro_i[total_need] = pro_i[total_need] + c_A_a
+						end
 					end
+				else
+					break
 				end
 			else
 			    if pro[i][0] == 0 then
@@ -158,13 +177,17 @@ function M.get_score(tbl, out_cards, hand_cards, n)
 				end
 			end
 		end
+		
+		local pro1 = pro[1]
+		local pro2 = pro[2]
+		local pro3 = pro[3]
 		for i=0,6 do
 			for j=0,6 do
 				if i+j <= 6 then
 					for k=0,6 do
 						local sum = i + j + k
 						if sum > 0 and sum <= 6 then
-							local mul = pro[1][i]*pro[2][j]*pro[3][k]
+							local mul = pro1[i]*pro2[j]*pro3[k]
 							if mul > 0 then
 								sum_pro[sum] = sum_pro[sum] + mul
 							end
