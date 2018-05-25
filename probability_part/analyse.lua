@@ -114,10 +114,13 @@ function M.get_score(tbl, out_cards, hand_cards, n)
 	local sum_pro = {0,0,0,0,0,0}
 	for _,v in ipairs(tbl) do
 		local pro = {
-			[1] = {[0]=0,0,0,0,0,0,0},
-			[2] = {[0]=0,0,0,0,0,0,0},
-			[3] = {[0]=0,0,0,0,0,0,0},
+			[1] = {0,0,0,0,0,0},
+			[2] = {0,0,0,0,0,0},
+			[3] = {0,0,0,0,0,0},
 		}
+		pro[1][0]=0
+		pro[2][0]=0
+		pro[3][0]=0
 		for i=1,3 do
 			if v[i] > 0 then
 				local pro_i = pro[i]
@@ -139,18 +142,22 @@ function M.get_score(tbl, out_cards, hand_cards, n)
 								break
 							end
 							if lack > 0 then
+								total_need = total_need + lack
 								c_A_a = c_A_a * mathC(left, lack)
 							end
 						end
 					end
 
-					if not br and total_need <= 6 and total_need < v[i] then
+					if not br and total_need <= 6 and total_need <= v[i] then
 						pro_i[total_need] = pro_i[total_need] + c_A_a
 					end
 				end
+			else
+			    if pro[i][0] == 0 then
+					pro[i][0] = 1
+				end
 			end
 		end
-		local mul = 0
 		for i=0,6 do
 			for j=0,6 do
 				if i+j <= 6 then
@@ -170,11 +177,11 @@ function M.get_score(tbl, out_cards, hand_cards, n)
 
 	local params = {
 		1,
-		0.5,
-		0.5*0.5,
-		0.5*0.5*0.5,
-		0.5*0.5*0.5*0.5,
-		0.5*0.5*0.5*0.5*0.5
+		4,
+		4,
+		4,
+		4,
+		4
 	}
 
 	for i=1,6 do
@@ -182,8 +189,9 @@ function M.get_score(tbl, out_cards, hand_cards, n)
 	end
 
 	local result = 0
+	local param = 1
 	for i=1,6 do
-		result = sum_pro[i] * params[i]
+		result = result + sum_pro[i] * param / params[i]
 	end
 	return result
 end
