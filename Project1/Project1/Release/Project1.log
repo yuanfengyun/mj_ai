@@ -1,0 +1,7 @@
+﻿  analyse.c
+..\..\probability\src_c\analyse.c(23): warning C4013: “printf”未定义；假设外部返回 int
+  正在生成代码
+e:\mj_ai\probability\src_c\table_mgr.c(14): warning C4716: “init_table”: 必须返回一个值
+  All 21 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  Project1.vcxproj -> E:\mj_ai\Project1\Release\Project1.exe

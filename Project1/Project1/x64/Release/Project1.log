@@ -1,0 +1,3 @@
+﻿  analyse.c
+  LINK : 已指定 /LTCG，但不需要生成代码；从链接命令行中移除 /LTCG 以提高链接器性能
+  Project1.vcxproj -> E:\mj_ai\Project1\x64\Release\Project1.exe
